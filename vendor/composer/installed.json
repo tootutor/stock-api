@@ -1,0 +1,44 @@
+[
+    {
+        "name": "dirkolbrich/yahoo-finance-query",
+        "version": "dev-master",
+        "version_normalized": "9999999-dev",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/dirkolbrich/yahoo-finance-query.git",
+            "reference": "66955e1fb000f5867232b09fca03b1fa17ce637c"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/dirkolbrich/yahoo-finance-query/zipball/66955e1fb000f5867232b09fca03b1fa17ce637c",
+            "reference": "66955e1fb000f5867232b09fca03b1fa17ce637c",
+            "shasum": ""
+        },
+        "require-dev": {
+            "phpunit/phpunit": "4.0.*"
+        },
+        "time": "2015-10-16 09:18:16",
+        "type": "library",
+        "installation-source": "source",
+        "autoload": {
+            "psr-4": {
+                "DirkOlbrich\\YahooFinanceQuery\\": "src"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Dirk Olbrich",
+                "email": "mail@dirkolbrich.de"
+            }
+        ],
+        "description": "A PHP class to query the Yahoo Finance API",
+        "keywords": [
+            "finance",
+            "yahoo"
+        ]
+    }
+]

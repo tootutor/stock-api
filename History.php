@@ -6,29 +6,41 @@ class History
 {
   /**
    * @smart-auto-routing false
-   * @url GET dayload
+   * @url POST loadprice
    */ 
-	public function getDayLoad() 
+	public function postLoadPrice($unit = 'd', $limit = 50) 
 	{
     $query = new YahooFinanceQuery;
     $today = date('Y-m-d');
     
-    $statement = "SELECT * FROM stock WHERE lastUpdatePriceEOD < :today LIMIT 50";
-    $bind = array('today' => $today);
+    $statement = "
+      SELECT S.*, L.lastDate
+      FROM stock AS S
+      INNER JOIN stock_update_log AS L
+      ON L.ticker = S.ticker
+      AND L.unit = :unit
+      WHERE L.lastUpdateDate < :today 
+    ";
+    if ($limit > 0) {
+      $statement = $statement . ' LIMIT ' . $limit;
+    }
+    $bind = array(
+      'today' => $today
+     ,'unit'  => $unit 
+    );
     $stockList = \Db::getResult($statement, $bind);
 
     ini_set('max_execution_time', 300); //300 seconds = 5 minutes
     $response = array();
     foreach ($stockList as $stock) {
-      if ($stock['lastUpdatePriceEOD'] == '0000-00-00') {
-        $startDate = '1900-01-01';
-      } else {
-        $date = date_create($stock['lastUpdatePriceEOD']);
+      if ($stock['lastDate']) {
+        $date = date_create($stock['lastDate']);
         date_add($date, date_interval_create_from_date_string('1 days'));
         $startDate = date_format($date, 'Y-m-d');
+      } else {
+        $startDate = '1900-01-01';
       }
       $endDate = $today;
-      $unit = 'd';
       $dataList = $query->historicalQuote($stock['symbol'], $startDate, $endDate, $unit)->get();
       $count = 0;
       foreach($dataList as $data) {
@@ -49,107 +61,37 @@ class History
         );
         $row_insert = \Db::execute($statement, $bind);
         $count = $count + $row_insert;
+        $lastDate = $data['Date'];
       }
       $response[$stock['ticker']] = $count;
       
-      $statement = "
-        UPDATE stock
-        SET lastUpdatePriceEOD = :today
-        WHERE ticker = :ticker
-      ";
-      $bind = array(
-        'ticker' => $stock['ticker']
-       ,'today'  => $today
-      );
-      $row_execute = \Db::execute($statement, $bind);
-      
-    }
-    return $response;
-  }
-
-  /**
-   * @smart-auto-routing false
-   * @url GET weekload
-   */ 
-	public function getWeekLoad() 
-	{
-    $query = new YahooFinanceQuery;
-    $today = date('Y-m-d');
-    
-    $statement = "SELECT * FROM stock WHERE lastUpdatePriceEOW < :today LIMIT 50";
-    $bind = array('today' => $today);
-    $stockList = \Db::getResult($statement, $bind);
-
-    ini_set('max_execution_time', 300); //300 seconds = 5 minutes
-    $response = array();
-    foreach ($stockList as $stock) {
-      if ($stock['lastUpdatePriceEOW'] == '0000-00-00') {
-        $startDate = '1900-01-01';
-      } else {
-        $date = date_create($stock['lastUpdatePriceEOW']);
-        date_add($date, date_interval_create_from_date_string('1 days'));
-        $startDate = date_format($date, 'Y-m-d');
-      }
-      $endDate = $today;
-      $unit = 'w';
-      $dataList = $query->historicalQuote($stock['symbol'], $startDate, $endDate, $unit)->get();
-      $count = 0;
-      foreach($dataList as $data) {
+      if ($count > 0) {
         $statement = "
-          INSERT INTO stock_history (ticker, unit, date, open, close, high, low, volume, adjclose)
-          values (:ticker, :unit, :date, :open, :close, :high, :low, :volume, :adjclose)
+          UPDATE stock_update_log
+          SET lastUpdateDate = :lastUpdateDate
+             ,lastDate       = :lastDate
+          WHERE ticker = :ticker
+          AND   unit   = :unit
         ";
         $bind = array(
-          'ticker'   => $stock['ticker']
-         ,'unit'     => $unit
-         ,'date'     => $data['Date']
-         ,'open'     => $data['Open']
-         ,'close'    => $data['Close']
-         ,'high'     => $data['High']
-         ,'low'      => $data['Low']
-         ,'volume'   => $data['Volume']
-         ,'adjclose' => $data['AdjClose']
+           'ticker'         => $stock['ticker']
+          ,'unit'           => $unit
+          ,'lastUpdateDate' => $today
+          ,'lastDate'       => $lastDate
         );
-        $row_insert = \Db::execute($statement, $bind);
-        $count = $count + $row_insert;
+        $row_execute = \Db::execute($statement, $bind);
+        
+        if ($row_execute = 0) {
+          $statement = "
+            INSERT INTO stock_update_log (ticker, unit, lastDate, lastUpdateDate)
+            VALUES (:ticker, :unit, :lastDate, :lastUpdateDate)
+          ";
+          $row_execute = \Db::execute($statement, $bind);
+        }
       }
-      $response[$stock['ticker']] = $count;
-      
-      $statement = "
-        UPDATE stock
-        SET lastUpdatePriceEOW = :today
-        WHERE ticker = :ticker
-      ";
-      $bind = array(
-        'ticker' => $stock['ticker']
-       ,'today'  => $today
-      );
-      $row_execute = \Db::execute($statement, $bind);
-      
     }
+    
     return $response;
-  }
-  
-  /**
-   * @smart-auto-routing false
-   * @url GET daysummary
-   */ 
-	public function getDaySummary() 
-	{
-    $query = new YahooFinanceQuery;
-    $statement = "SELECT * FROM view_history_day_summary";
-    return \Db::getResult($statement);
-  }
-
-  /**
-   * @smart-auto-routing false
-   * @url GET weeksummary
-   */ 
-	public function getWeekSummary() 
-	{
-    $query = new YahooFinanceQuery;
-    $statement = "SELECT * FROM view_history_week_summary";
-    return \Db::getResult($statement);
   }
   
 }

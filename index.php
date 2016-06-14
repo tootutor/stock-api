@@ -37,6 +37,7 @@ $r->addAPIClass('Explorer');
 $r->addAuthenticationClass('Auth');
 $r->addAPIClass('Stock');
 $r->addAPIClass('History');
+$r->addAPIClass('Statistic');
 $r->addAPIClass('Analysis');
 $r->addAPIClass('Test');
 $r->handle();

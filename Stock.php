@@ -16,13 +16,16 @@ class Stock
   
   /**
    * @smart-auto-routing false
-   * @url GET fullinfo
+   * @url POST loadinfo
    */ 
-	public function getFullInfo() 
+	public function postLoadInfo($limit = 0) 
 	{
     $query = new YahooFinanceQuery;
 
     $statement = "SELECT * FROM stock";
+    if ($limit > 0) {
+      $statement = $statement . ' LIMIT ' . $limit;
+    }
     $stockList = \Db::getResult($statement);
 
     ini_set('max_execution_time', 300); //300 seconds = 5 minutes

@@ -3,50 +3,88 @@ use Luracast\Restler\RestException;
 
 class Analysis
 {
-  private function processEMA(&$arrayList, $number)
-  {  
-    $arrayCount = count($arrayList);
-    if ($arrayCount > $number) {
-      $sumPrice = 0;
-      for (i=0; i<$number; i++) {
-        $sumPrice = $sumPrice + $arrayList[i]['price'];
-      }
-      $initSMA = $sumPrice/$number;
-      
-      $yesterdayEMA = $initSMA;
-      for (i=$number; i<$arrayCount; i++) {
-        
-      }
-    }
-  }
-
   /**
    * @smart-auto-routing false
-   * @url GET processday
+   * @url POST calsma
    */ 
-	public function getDayLoad() 
+	public function postCalSMA($unit = 'd', $interval = 1, $limit = 0) 
 	{
+    $stat = 'SMA' . $interval;
+    
     $statement = "SELECT * FROM stock";
+    if ($limit > 0) {
+      $statement = $statement . ' LIMIT ' . $limit;
+    }
     $stockList = \Db::getResult($statement);
 
-    ini_set('max_execution_time', 300); //300 seconds = 5 minutes
+    ini_set('max_execution_time', 3000); //3000 seconds = 50 minutes
+    $response = array();
     foreach ($stockList as $stock) {
       $statement = "
-        SELECT * FROM stock_history
+        SELECT * FROM history AS H
         WHERE ticker = :ticker
         AND unit = :unit
+        AND NOT EXISTS (
+          SELECT 1 FROM statistic AS ST
+          WHERE ST.ticker = H.ticker
+          AND ST.unit = H.unit
+          AND ST.stat = :stat
+        )
         ORDER BY date
       ";
       $bind = array(
         'ticker' => $stock['ticker']
-       ,'unit'   => 'd'
+       ,'unit'   => $unit
+       ,'stat'   => $stat
       );
       $priceList = \Db::getResult($statement, $bind);
-      
-      processEMA($priceList, 12);
-      processEMA($priceList, 26);
-      processEMA($priceList, 9);
-      
+
+      $count = 0;
+      foreach ($priceList as $price) {
+        $statement = "
+          SELECT 
+            SUM(close) AS total
+           ,COUNT(*) AS count
+          FROM (
+            SELECT H.close
+            FROM history AS H
+            WHERE ticker = :ticker
+            AND unit = :unit
+            AND date <= :date
+            ORDER BY date DESC
+            LIMIT " . $interval . "
+          ) AS temp
+        ";
+        $bind = array(
+          'ticker' => $stock['ticker']
+         ,'unit'   => $unit
+         ,'date'   => $price['date']
+        );
+        $summary = \Db::getRow($statement, $bind);
+        
+        if ((int)$summary['count'] == $interval) {
+          $value = $summary['total'] / $interval;
+        } else {
+          $value = null;
+        }
+        
+        $statement = "
+          INSERT INTO statistic (ticker, unit, stat, date, value)
+          VALUES (:ticker, :unit, :stat, :date, :value);
+        ";
+        $bind = array(
+          'ticker' => $stock['ticker']
+         ,'unit'   => $unit
+         ,'stat'   => $stat
+         ,'date'   => $price['date']
+         ,'value'  => $value
+        );
+        $row_execute = \Db::execute($statement, $bind);
+        $count = $count + $row_execute;
+      }
+      $response[$stock['ticker']] = $count;
+
+    }
     return $response;
   }
   

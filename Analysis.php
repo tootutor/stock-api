@@ -301,8 +301,8 @@ class Analysis
       $arrayCount = count($priceList);
       // Loop start with the 2nd item 
       for ($i=1; $i<$arrayCount; $i++) {
-        if ( ($priceList[$i-1]['value1']-$priceList[$i-1]['value2'] < $priceList[$i-1]['value3'])
-          && ($priceList[$i]['value1']-$priceList[$i]['value2'] > $priceList[$i]['value3']) )
+        if ( ( ($priceList[$i-1]['value1']-$priceList[$i-1]['value2']) < $priceList[$i-1]['value3'])
+          && ( ($priceList[$i]['value1']-$priceList[$i]['value2']) > $priceList[$i]['value3']) )
         {
           //Buying Point
           $statement = "
@@ -318,8 +318,8 @@ class Analysis
           );
           $row_execute = \Db::execute($statement, $bind);
         } else {
-          if ( ($priceList[$i-1]['value1'] > $priceList[$i-1]['value2'])
-            && ($priceList[$i]['value1']   < $priceList[$i]['value2']  ) )
+          if ( ( ($priceList[$i-1]['value1']-$priceList[$i-1]['value2']) > $priceList[$i-1]['value3'])
+            && ( ($priceList[$i]['value1']-$priceList[$i]['value2']) < $priceList[$i]['value3']) )
           {
             //Selling Point
             $statement = "

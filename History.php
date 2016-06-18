@@ -57,39 +57,41 @@ class History
       $count = 0;
       $lastDate = $stock['lastDate'];
       foreach($dataList as $data) {
-        $statement = "
-          SELECT 1 FROM history
-          WHERE ticker = :ticker
-          AND unit = :unit
-          AND date = :date
-        ";
-        $bind = array(
-          'ticker'   => $stock['ticker']
-         ,'unit'     => $unit
-         ,'date'     => $data['Date']
-        );
-        $exist = \Db::getValue($statement, $bind);
-
-        if (!$exist) {
+        if ($data['Date'] > '1900-01-01') {
           $statement = "
-            INSERT INTO history (ticker, unit, date, open, close, high, low, volume, adjclose)
-            values (:ticker, :unit, :date, :open, :close, :high, :low, :volume, :adjclose)
+            SELECT 1 FROM history
+            WHERE ticker = :ticker
+            AND unit = :unit
+            AND date = :date
           ";
           $bind = array(
             'ticker'   => $stock['ticker']
            ,'unit'     => $unit
            ,'date'     => $data['Date']
-           ,'open'     => $data['Open']
-           ,'close'    => $data['Close']
-           ,'high'     => $data['High']
-           ,'low'      => $data['Low']
-           ,'volume'   => $data['Volume']
-           ,'adjclose' => $data['AdjClose']
           );
-          $row_execute = \Db::execute($statement, $bind);
-        }        
-        $count = $count + $row_execute;
-        $lastDate = max($lastDate, $data['Date']);
+          $exist = \Db::getValue($statement, $bind);
+
+          if (!$exist) {
+            $statement = "
+              INSERT INTO history (ticker, unit, date, open, close, high, low, volume, adjclose)
+              values (:ticker, :unit, :date, :open, :close, :high, :low, :volume, :adjclose)
+            ";
+            $bind = array(
+              'ticker'   => $stock['ticker']
+             ,'unit'     => $unit
+             ,'date'     => $data['Date']
+             ,'open'     => $data['Open']
+             ,'close'    => $data['Close']
+             ,'high'     => $data['High']
+             ,'low'      => $data['Low']
+             ,'volume'   => $data['Volume']
+             ,'adjclose' => $data['AdjClose']
+            );
+            $row_execute = \Db::execute($statement, $bind);
+          }        
+          $count = $count + $row_execute;
+          $lastDate = max($lastDate, $data['Date']);
+        }
       }
       $response[$stock['ticker']] = $count;
       

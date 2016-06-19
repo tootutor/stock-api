@@ -23,7 +23,7 @@ class Batch
     
     \TTOMail::createAndSendAdmin(
       'Daily Batch Finished !!! - ' . date('Y-m-d') . ' parm=' . $unit . "-" . $limit 
-     ,json_encode($bind)
+     ,'Done !!!'
     );
   
     return "done";

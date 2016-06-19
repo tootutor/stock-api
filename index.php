@@ -39,6 +39,7 @@ $r->addAPIClass('Stock');
 $r->addAPIClass('History');
 $r->addAPIClass('Statistic');
 $r->addAPIClass('Analysis');
+$r->addAPIClass('Batch');
 $r->addAPIClass('Test');
 $r->handle();
 ?>

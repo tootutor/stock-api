@@ -220,7 +220,9 @@ class Analysis
             $row_execute = \Db::execute($statement, $bind);
           }
         }
-        $count = $count + $row_execute;
+        if ($row_execute > 0) {
+          $count = $count + $row_execute;
+        }
       }
       $response[$stock['ticker']] = $count;
     }

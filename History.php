@@ -6,7 +6,7 @@ class History
 {
   /**
    * @smart-auto-routing false
-   * @url POST loadprice
+   * @url POST load-price
    */ 
 	public function postLoadPrice($unit = 'd', $limit = 50) 
 	{

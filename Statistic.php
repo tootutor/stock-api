@@ -134,7 +134,6 @@ class Statistic
      ,'stat'   => $stat
     );
     $found = \Db::getValue($statement, $bind);
-    error_log('STOCKDBG $found = ' . $found);
     // No initial EMA yet
     if ($found != 1) {
       $statement = "
@@ -238,7 +237,6 @@ class Statistic
     $stat = 'EMA' . $interval;
 
     $init = $this->postEMASingleInit($ticker, $unit, $interval);
-    error_log('STOCKDBG $init = ' . $init);
    
     if ($init == 0) {
       return 'Not Enough Data';

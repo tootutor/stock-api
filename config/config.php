@@ -7,5 +7,5 @@ define('DBUSER', 'root');
 define('DBPASS', '');
 
 // Admin Email config
-define('ADMINEMAIL', 'tootutoronline@gmail.com');
+define('ADMINEMAIL', 'too2521@gmail.com');
 ?>

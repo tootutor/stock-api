@@ -153,11 +153,11 @@ class Statistic
         $total = 0;
         foreach ($priceList as $price) {
           $count++;
+          $total = $total + $price['close'];
           if ($count == $interval) {
             $value = $total / $interval;
           } else {
             $value = null;
-            $total = $total + $price['close'];
           }
           $statement = "
             INSERT INTO statistic (ticker, unit, stat, date, value)
@@ -399,11 +399,11 @@ class Statistic
         $total = 0;
         foreach ($MACDList as $MACD) {
           $count++;
+          $total = $total + $MACD['value'];
           if ($count == $interval) {
             $value = $total / $interval;
           } else {
             $value = null;
-            $total = $total + $MACD['value'];
           }
           $statement = "
             INSERT INTO statistic (ticker, unit, stat, date, value)
@@ -432,7 +432,7 @@ class Statistic
    * @url POST signal-item
    */ 
 	public function postSIGNALItem(
-    $ticker, $unit = 'd', $interval = 9, $interval1 = 12, $interval2 = 26, $date, $lastSIGNAL, $value) 
+    $ticker, $unit = 'd', $interval = 9, $interval1 = 12, $interval2 = 26, $date, $lastSIGNAL, $MACD) 
 	{
     $stat = 'SIGNAL' . $interval . '-' . $interval1 . '-' . $interval2;
     
@@ -457,7 +457,7 @@ class Statistic
       $lastSIGNAL = \Db::getValue($statement, $bind);
     }
     //Calculate current EMA base on yesterday EMA.
-    $value = $lastSIGNAL + ( (2 / ($interval+1)) * ($price - $lastSIGNAL) );
+    $value = $lastSIGNAL + ( (2 / ($interval+1)) * ($MACD - $lastSIGNAL) );
     
     $statement = "
       INSERT INTO statistic (ticker, unit, stat, date, value)

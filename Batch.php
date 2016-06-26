@@ -29,6 +29,8 @@ class Batch
     // Analyze statitic
     $analysis = new Analysis();
 
+    $analysis->postPriceEMAAll($unit, 5, $limit);
+    $analysis->postSMASMAAll($unit, 5, 20, $limit);
     $analysis->postEMAEMAAll($unit, 5, 20, $limit);
     $analysis->postMACDAll($unit, 12, 26, 9, $limit);
     

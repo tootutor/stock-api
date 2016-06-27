@@ -534,7 +534,7 @@ class Statistic
    * @smart-auto-routing false
    * @url POST singnal-all
    */ 
-	public function postSIGNALAll($unit = 'd', $interval = 9, $interval1 = 12, $interval1 = 26, $limit = 0) 
+	public function postSIGNALAll($unit = 'd', $interval = 9, $interval1 = 12, $interval2 = 26, $limit = 0) 
 	{
     $statement = "SELECT * FROM stock";
     if ($limit > 0) {

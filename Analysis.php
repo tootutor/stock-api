@@ -392,7 +392,7 @@ class Analysis
       AND type = :type
     ";
     $bind = array(
-      'ticker' => $stock['ticker']
+      'ticker' => $ticker
      ,'unit'   => $unit
      ,'type'   => $type
     );
